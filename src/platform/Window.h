@@ -9,6 +9,8 @@ class Window final
 {
 public:
     using ResizeCallback = std::function<void(UINT, UINT)>;
+    using KeyCallback = std::function<void(UINT, bool)>;
+    using FocusLostCallback = std::function<void()>;
 
     Window(
         HINSTANCE instance,
@@ -25,7 +27,10 @@ public:
     HWND GetHandle() const;
     UINT GetClientWidth() const;
     UINT GetClientHeight() const;
+    void RequestClose() const;
     void SetResizeCallback(ResizeCallback callback);
+    void SetKeyCallback(KeyCallback callback);
+    void SetFocusLostCallback(FocusLostCallback callback);
 
 private:
     static LRESULT CALLBACK WindowProcedure(
@@ -42,4 +47,6 @@ private:
     UINT clientWidth_ = 0;
     UINT clientHeight_ = 0;
     ResizeCallback resizeCallback_;
+    KeyCallback keyCallback_;
+    FocusLostCallback focusLostCallback_;
 };

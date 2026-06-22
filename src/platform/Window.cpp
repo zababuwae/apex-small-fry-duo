@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "../core/DebugLog.h"
 
 #include <stdexcept>
 #include <utility>
@@ -55,6 +56,7 @@ Window::Window(
 
     ShowWindow(handle_, showCommand);
     UpdateWindow(handle_);
+    DebugLog::Format("Window created. Size=%ux%u", clientWidth_, clientHeight_);
 }
 
 Window::~Window()
@@ -103,9 +105,27 @@ UINT Window::GetClientHeight() const
     return clientHeight_;
 }
 
+void Window::RequestClose() const
+{
+    if (handle_ != nullptr)
+    {
+        PostMessageW(handle_, WM_CLOSE, 0, 0);
+    }
+}
+
 void Window::SetResizeCallback(ResizeCallback callback)
 {
     resizeCallback_ = std::move(callback);
+}
+
+void Window::SetKeyCallback(KeyCallback callback)
+{
+    keyCallback_ = std::move(callback);
+}
+
+void Window::SetFocusLostCallback(FocusLostCallback callback)
+{
+    focusLostCallback_ = std::move(callback);
 }
 
 LRESULT CALLBACK Window::WindowProcedure(
@@ -140,21 +160,45 @@ LRESULT Window::HandleMessage(UINT message, WPARAM wordParameter, LPARAM longPar
 {
     switch (message)
     {
+    case WM_KEYDOWN:
+        if (keyCallback_)
+        {
+            keyCallback_(static_cast<UINT>(wordParameter), true);
+        }
+        return 0;
+
+    case WM_KEYUP:
+        if (keyCallback_)
+        {
+            keyCallback_(static_cast<UINT>(wordParameter), false);
+        }
+        return 0;
+
+    case WM_KILLFOCUS:
+        if (focusLostCallback_)
+        {
+            focusLostCallback_();
+        }
+        return 0;
+
     case WM_SIZE:
         clientWidth_ = LOWORD(longParameter);
         clientHeight_ = HIWORD(longParameter);
 
         if (wordParameter != SIZE_MINIMIZED && resizeCallback_)
         {
+            DebugLog::Format("Window resized. Size=%ux%u", clientWidth_, clientHeight_);
             resizeCallback_(clientWidth_, clientHeight_);
         }
         return 0;
 
     case WM_CLOSE:
+        DebugLog::Info("Window close requested.");
         DestroyWindow(handle_);
         return 0;
 
     case WM_DESTROY:
+        DebugLog::Info("Window destroyed.");
         handle_ = nullptr;
         PostQuitMessage(0);
         return 0;

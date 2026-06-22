@@ -1,4 +1,5 @@
 #include "core/Application.h"
+#include "core/DebugLog.h"
 
 #include <Windows.h>
 
@@ -16,11 +17,15 @@ int WINAPI wWinMain(
 
     try
     {
+        DebugLog::Info("Application starting.");
         Application application(instance, showCommand);
-        return application.Run();
+        const int exitCode = application.Run();
+        DebugLog::Format("Application stopped. Code=%d", exitCode);
+        return exitCode;
     }
     catch (const std::exception& exception)
     {
+        DebugLog::Error(exception.what());
         MessageBoxA(nullptr, exception.what(), "Apex Small Fry Duo", MB_OK | MB_ICONERROR);
         return EXIT_FAILURE;
     }

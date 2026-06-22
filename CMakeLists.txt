@@ -6,6 +6,12 @@ add_executable(ApexSmallFryDuo WIN32
     src/main.cpp
     src/core/Application.cpp
     src/core/Application.h
+    src/core/DebugLog.cpp
+    src/core/DebugLog.h
+    src/core/Timer.cpp
+    src/core/Timer.h
+    src/input/Input.cpp
+    src/input/Input.h
     src/platform/Window.cpp
     src/platform/Window.h
     src/renderer/Renderer.cpp

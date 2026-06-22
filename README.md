@@ -27,6 +27,25 @@ The Debug executable is generated at:
 build/vs2022-x64/Debug/ApexSmallFryDuo.exe
 ```
 
+### Current Progress
+
+- Win32 window and application loop
+- DirectX 11 device, swap chain, and render target
+- Window resize handling
+- High-resolution frame timer
+- Keyboard state and pressed/released detection
+- Escape key to close the application
+
+The remaining half of the current core task is mouse input, cursor control, and frame-rate control.
+
+Debug builds write short runtime messages to the Visual Studio Output window.
+
+```text
+[Apex][Info] Application starting.
+[Apex][Info] DX11 ready. FeatureLevel=0xB100
+[Apex][Info] Running. FPS=60 Delta=16.667 ms
+```
+
 ### First Milestone
 
 Our first goal is to build a simple playable 3D scene with:
@@ -73,6 +92,25 @@ Debug版の実行ファイルは以下の場所に生成されます。
 
 ```text
 build/vs2022-x64/Debug/ApexSmallFryDuo.exe
+```
+
+### 現在の進捗
+
+- Win32ウィンドウとアプリケーションループ
+- DirectX 11デバイス、スワップチェーン、レンダーターゲット
+- ウィンドウサイズ変更への対応
+- 高精度フレームタイマー
+- キーボードの状態と押下・解放の判定
+- Escapeキーによるアプリケーション終了
+
+現在のコア作業で残っている半分は、マウス入力、カーソル制御、フレームレート制御です。
+
+Debugビルドでは、実行状況をVisual Studioの出力ウィンドウへ短い英語で表示します。
+
+```text
+[Apex][Info] Application starting.
+[Apex][Info] DX11 ready. FeatureLevel=0xB100
+[Apex][Info] Running. FPS=60 Delta=16.667 ms
 ```
 
 ### 最初の目標

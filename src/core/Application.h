@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Timer.h"
+#include "../input/Input.h"
 #include "../platform/Window.h"
 #include "../renderer/Renderer.h"
 
@@ -15,4 +17,6 @@ public:
 private:
     Window window_;
     Renderer renderer_;
+    Timer timer_;
+    Input input_;
 };

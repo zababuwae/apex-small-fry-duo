@@ -103,9 +103,27 @@ UINT Window::GetClientHeight() const
     return clientHeight_;
 }
 
+void Window::RequestClose() const
+{
+    if (handle_ != nullptr)
+    {
+        PostMessageW(handle_, WM_CLOSE, 0, 0);
+    }
+}
+
 void Window::SetResizeCallback(ResizeCallback callback)
 {
     resizeCallback_ = std::move(callback);
+}
+
+void Window::SetKeyCallback(KeyCallback callback)
+{
+    keyCallback_ = std::move(callback);
+}
+
+void Window::SetFocusLostCallback(FocusLostCallback callback)
+{
+    focusLostCallback_ = std::move(callback);
 }
 
 LRESULT CALLBACK Window::WindowProcedure(
@@ -140,6 +158,27 @@ LRESULT Window::HandleMessage(UINT message, WPARAM wordParameter, LPARAM longPar
 {
     switch (message)
     {
+    case WM_KEYDOWN:
+        if (keyCallback_)
+        {
+            keyCallback_(static_cast<UINT>(wordParameter), true);
+        }
+        return 0;
+
+    case WM_KEYUP:
+        if (keyCallback_)
+        {
+            keyCallback_(static_cast<UINT>(wordParameter), false);
+        }
+        return 0;
+
+    case WM_KILLFOCUS:
+        if (focusLostCallback_)
+        {
+            focusLostCallback_();
+        }
+        return 0;
+
     case WM_SIZE:
         clientWidth_ = LOWORD(longParameter);
         clientHeight_ = HIWORD(longParameter);

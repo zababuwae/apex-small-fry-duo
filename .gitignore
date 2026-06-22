@@ -145,3 +145,6 @@ Generated_Code/
 codex-output/
 codex-*.log
 codex-*.tmp
+
+# wada's private
+PROJECT_STATUS.md

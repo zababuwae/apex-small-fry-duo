@@ -38,6 +38,14 @@ build/vs2022-x64/Debug/ApexSmallFryDuo.exe
 
 The remaining half of the current core task is mouse input, cursor control, and frame-rate control.
 
+Debug builds write short runtime messages to the Visual Studio Output window.
+
+```text
+[Apex][Info] Application starting.
+[Apex][Info] DX11 ready. FeatureLevel=0xB100
+[Apex][Info] Running. FPS=60 Delta=16.667 ms
+```
+
 ### First Milestone
 
 Our first goal is to build a simple playable 3D scene with:
@@ -96,6 +104,14 @@ build/vs2022-x64/Debug/ApexSmallFryDuo.exe
 - Escapeキーによるアプリケーション終了
 
 現在のコア作業で残っている半分は、マウス入力、カーソル制御、フレームレート制御です。
+
+Debugビルドでは、実行状況をVisual Studioの出力ウィンドウへ短い英語で表示します。
+
+```text
+[Apex][Info] Application starting.
+[Apex][Info] DX11 ready. FeatureLevel=0xB100
+[Apex][Info] Running. FPS=60 Delta=16.667 ms
+```
 
 ### 最初の目標
 

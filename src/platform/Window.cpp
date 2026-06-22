@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "../core/DebugLog.h"
 
 #include <stdexcept>
 #include <utility>
@@ -55,6 +56,7 @@ Window::Window(
 
     ShowWindow(handle_, showCommand);
     UpdateWindow(handle_);
+    DebugLog::Format("Window created. Size=%ux%u", clientWidth_, clientHeight_);
 }
 
 Window::~Window()
@@ -185,15 +187,18 @@ LRESULT Window::HandleMessage(UINT message, WPARAM wordParameter, LPARAM longPar
 
         if (wordParameter != SIZE_MINIMIZED && resizeCallback_)
         {
+            DebugLog::Format("Window resized. Size=%ux%u", clientWidth_, clientHeight_);
             resizeCallback_(clientWidth_, clientHeight_);
         }
         return 0;
 
     case WM_CLOSE:
+        DebugLog::Info("Window close requested.");
         DestroyWindow(handle_);
         return 0;
 
     case WM_DESTROY:
+        DebugLog::Info("Window destroyed.");
         handle_ = nullptr;
         PostQuitMessage(0);
         return 0;

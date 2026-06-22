@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "../core/DebugLog.h"
 
 #include <stdexcept>
 
@@ -54,6 +55,7 @@ void Renderer::Initialize(HWND windowHandle, UINT width, UINT height)
 
     if (result == E_INVALIDARG)
     {
+        DebugLog::Warning("Feature level 11.1 unavailable. Retrying with 11.0.");
         result = D3D11CreateDeviceAndSwapChain(
             nullptr,
             D3D_DRIVER_TYPE_HARDWARE,
@@ -72,6 +74,7 @@ void Renderer::Initialize(HWND windowHandle, UINT width, UINT height)
 #if defined(_DEBUG)
     if (result == DXGI_ERROR_SDK_COMPONENT_MISSING)
     {
+        DebugLog::Warning("DX11 debug layer unavailable. Retrying without it.");
         creationFlags &= ~D3D11_CREATE_DEVICE_DEBUG;
         result = D3D11CreateDeviceAndSwapChain(
             nullptr,
@@ -91,6 +94,7 @@ void Renderer::Initialize(HWND windowHandle, UINT width, UINT height)
 
     ThrowIfFailed(result, "Failed to initialize DirectX 11.");
     CreateRenderTarget();
+    DebugLog::Format("DX11 ready. FeatureLevel=0x%04X", static_cast<unsigned int>(selectedFeatureLevel));
 }
 
 void Renderer::Resize(UINT width, UINT height)
@@ -108,6 +112,7 @@ void Renderer::Resize(UINT width, UINT height)
         "Failed to resize the swap chain.");
 
     CreateRenderTarget();
+    DebugLog::Format("Render target resized. Size=%ux%u", width, height);
 }
 
 void Renderer::Clear(float red, float green, float blue, float alpha) const

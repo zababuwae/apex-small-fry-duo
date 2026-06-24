@@ -1,6 +1,8 @@
 #include "Window.h"
 #include "../core/DebugLog.h"
 
+#include <windowsx.h>
+
 #include <stdexcept>
 #include <utility>
 
@@ -61,6 +63,8 @@ Window::Window(
 
 Window::~Window()
 {
+    UnlockCursor();
+
     if (handle_ != nullptr)
     {
         DestroyWindow(handle_);
@@ -113,6 +117,37 @@ void Window::RequestClose() const
     }
 }
 
+void Window::SetCursorVisible(bool isVisible) const
+{
+    if (isVisible)
+    {
+        while (ShowCursor(TRUE) < 0)
+        {
+        }
+    }
+    else
+    {
+        while (ShowCursor(FALSE) >= 0)
+        {
+        }
+    }
+}
+
+void Window::LockCursorToClient()
+{
+    isCursorLocked_ = true;
+    UpdateCursorClip();
+}
+
+void Window::UnlockCursor()
+{
+    if (isCursorLocked_)
+    {
+        ClipCursor(nullptr);
+        isCursorLocked_ = false;
+    }
+}
+
 void Window::SetResizeCallback(ResizeCallback callback)
 {
     resizeCallback_ = std::move(callback);
@@ -121,6 +156,16 @@ void Window::SetResizeCallback(ResizeCallback callback)
 void Window::SetKeyCallback(KeyCallback callback)
 {
     keyCallback_ = std::move(callback);
+}
+
+void Window::SetMouseMoveCallback(MouseMoveCallback callback)
+{
+    mouseMoveCallback_ = std::move(callback);
+}
+
+void Window::SetLeftMouseButtonCallback(LeftMouseButtonCallback callback)
+{
+    leftMouseButtonCallback_ = std::move(callback);
 }
 
 void Window::SetFocusLostCallback(FocusLostCallback callback)
@@ -174,6 +219,41 @@ LRESULT Window::HandleMessage(UINT message, WPARAM wordParameter, LPARAM longPar
         }
         return 0;
 
+    case WM_MOUSEMOVE:
+        if (mouseMoveCallback_)
+        {
+            mouseMoveCallback_(GET_X_LPARAM(longParameter), GET_Y_LPARAM(longParameter));
+        }
+        return 0;
+
+    case WM_LBUTTONDOWN:
+        SetCapture(handle_);
+        if (mouseMoveCallback_)
+        {
+            mouseMoveCallback_(GET_X_LPARAM(longParameter), GET_Y_LPARAM(longParameter));
+        }
+        if (leftMouseButtonCallback_)
+        {
+            leftMouseButtonCallback_(true, GET_X_LPARAM(longParameter), GET_Y_LPARAM(longParameter));
+        }
+        return 0;
+
+    case WM_LBUTTONUP:
+        ReleaseCapture();
+        if (mouseMoveCallback_)
+        {
+            mouseMoveCallback_(GET_X_LPARAM(longParameter), GET_Y_LPARAM(longParameter));
+        }
+        if (leftMouseButtonCallback_)
+        {
+            leftMouseButtonCallback_(false, GET_X_LPARAM(longParameter), GET_Y_LPARAM(longParameter));
+        }
+        return 0;
+
+    case WM_SETFOCUS:
+        UpdateCursorClip();
+        return 0;
+
     case WM_KILLFOCUS:
         if (focusLostCallback_)
         {
@@ -188,6 +268,7 @@ LRESULT Window::HandleMessage(UINT message, WPARAM wordParameter, LPARAM longPar
         if (wordParameter != SIZE_MINIMIZED && resizeCallback_)
         {
             DebugLog::Format("Window resized. Size=%ux%u", clientWidth_, clientHeight_);
+            UpdateCursorClip();
             resizeCallback_(clientWidth_, clientHeight_);
         }
         return 0;
@@ -206,4 +287,29 @@ LRESULT Window::HandleMessage(UINT message, WPARAM wordParameter, LPARAM longPar
     default:
         return DefWindowProcW(handle_, message, wordParameter, longParameter);
     }
+}
+
+void Window::UpdateCursorClip() const
+{
+    if (!isCursorLocked_ || handle_ == nullptr)
+    {
+        return;
+    }
+
+    RECT clientRectangle{};
+    if (GetClientRect(handle_, &clientRectangle) == FALSE)
+    {
+        return;
+    }
+
+    POINT topLeft{clientRectangle.left, clientRectangle.top};
+    POINT bottomRight{clientRectangle.right, clientRectangle.bottom};
+
+    if (ClientToScreen(handle_, &topLeft) == FALSE || ClientToScreen(handle_, &bottomRight) == FALSE)
+    {
+        return;
+    }
+
+    RECT clipRectangle{topLeft.x, topLeft.y, bottomRight.x, bottomRight.y};
+    ClipCursor(&clipRectangle);
 }

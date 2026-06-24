@@ -11,6 +11,8 @@ public:
     void Resize(UINT width, UINT height);
     void Clear(float red, float green, float blue, float alpha) const;
     void Present() const;
+    void SetVSyncEnabled(bool isEnabled);
+    bool IsVSyncEnabled() const;
 
 private:
     void CreateRenderTarget();
@@ -19,4 +21,5 @@ private:
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext_;
     Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain_;
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView_;
+    bool isVSyncEnabled_ = true;
 };

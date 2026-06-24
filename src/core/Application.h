@@ -7,6 +7,8 @@
 
 #include <Windows.h>
 
+#include <chrono>
+
 class Application final
 {
 public:
@@ -15,8 +17,14 @@ public:
     int Run();
 
 private:
+    void LimitFrameRate(std::chrono::steady_clock::time_point frameStartTime) const;
+
+    static constexpr bool DefaultVSyncEnabled = true;
+    static constexpr unsigned int DefaultTargetFrameRate = 60;
+
     Window window_;
     Renderer renderer_;
     Timer timer_;
     Input input_;
+    unsigned int targetFrameRate_ = DefaultTargetFrameRate;
 };

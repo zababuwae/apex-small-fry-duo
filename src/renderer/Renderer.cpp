@@ -124,7 +124,18 @@ void Renderer::Clear(float red, float green, float blue, float alpha) const
 
 void Renderer::Present() const
 {
-    ThrowIfFailed(swapChain_->Present(1, 0), "Failed to present the frame.");
+    const UINT syncInterval = isVSyncEnabled_ ? 1U : 0U;
+    ThrowIfFailed(swapChain_->Present(syncInterval, 0), "Failed to present the frame.");
+}
+
+void Renderer::SetVSyncEnabled(bool isEnabled)
+{
+    isVSyncEnabled_ = isEnabled;
+}
+
+bool Renderer::IsVSyncEnabled() const
+{
+    return isVSyncEnabled_;
 }
 
 void Renderer::CreateRenderTarget()

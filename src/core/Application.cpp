@@ -84,8 +84,9 @@ int Application::Run()
         }
 
         const float pulse = static_cast<float>((std::sin(timer_.GetTotalTime()) + 1.0) * 0.5);
-        renderer_.Clear(0.08f, 0.12f, 0.15f + pulse * 0.12f, 1.0f);
-        renderer_.Present();
+        renderer_.BeginFrame(0.08f, 0.12f, 0.15f + pulse * 0.12f, 1.0f);
+        // Rendering work can be added here.
+        renderer_.EndFrame();
 
 #if defined(_DEBUG)
         ++frameCount;

@@ -94,6 +94,7 @@ void Renderer::Initialize(HWND windowHandle, UINT width, UINT height)
 
     ThrowIfFailed(result, "Failed to initialize DirectX 11.");
     CreateRenderTarget();
+    SetViewport(width, height);
     DebugLog::Format("DX11 ready. FeatureLevel=0x%04X", static_cast<unsigned int>(selectedFeatureLevel));
 }
 
@@ -112,7 +113,18 @@ void Renderer::Resize(UINT width, UINT height)
         "Failed to resize the swap chain.");
 
     CreateRenderTarget();
+    SetViewport(width, height);
     DebugLog::Format("Render target resized. Size=%ux%u", width, height);
+}
+
+void Renderer::BeginFrame(float red, float green, float blue, float alpha) const
+{
+    Clear(red, green, blue, alpha);
+}
+
+void Renderer::EndFrame() const
+{
+    Present();
 }
 
 void Renderer::Clear(float red, float green, float blue, float alpha) const
@@ -138,6 +150,16 @@ bool Renderer::IsVSyncEnabled() const
     return isVSyncEnabled_;
 }
 
+ID3D11Device* Renderer::GetDevice() const
+{
+    return device_.Get();
+}
+
+ID3D11DeviceContext* Renderer::GetDeviceContext() const
+{
+    return deviceContext_.Get();
+}
+
 void Renderer::CreateRenderTarget()
 {
     Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
@@ -148,4 +170,17 @@ void Renderer::CreateRenderTarget()
     ThrowIfFailed(
         device_->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView_.GetAddressOf()),
         "Failed to create the render target view.");
+}
+
+void Renderer::SetViewport(UINT width, UINT height) const
+{
+    D3D11_VIEWPORT viewport{};
+    viewport.TopLeftX = 0.0f;
+    viewport.TopLeftY = 0.0f;
+    viewport.Width = static_cast<float>(width);
+    viewport.Height = static_cast<float>(height);
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+
+    deviceContext_->RSSetViewports(1, &viewport);
 }

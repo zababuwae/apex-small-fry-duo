@@ -148,6 +148,11 @@ void Window::UnlockCursor()
     }
 }
 
+bool Window::IsCursorLocked() const
+{
+    return isCursorLocked_;
+}
+
 void Window::SetResizeCallback(ResizeCallback callback)
 {
     resizeCallback_ = std::move(callback);

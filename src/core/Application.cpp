@@ -6,14 +6,14 @@
 #include <thread>
 
 Application::Application(HINSTANCE instance, int showCommand)
-    : window_(instance, showCommand, L"Apex Small Fry Duo", 1280, 720)
+    : window_(instance, showCommand, config_.windowTitle, config_.windowWidth, config_.windowHeight)
 {
     renderer_.Initialize(window_.GetHandle(), window_.GetClientWidth(), window_.GetClientHeight());
-    renderer_.SetVSyncEnabled(DefaultVSyncEnabled);
+    renderer_.SetVSyncEnabled(config_.vSyncEnabled);
     DebugLog::Format(
         "Frame pacing ready. VSync=%s TargetFPS=%u",
         renderer_.IsVSyncEnabled() ? "On" : "Off",
-        targetFrameRate_);
+        config_.targetFrameRate);
     DebugLog::Info("Core systems ready.");
 
     window_.SetResizeCallback([this](UINT width, UINT height)
@@ -43,9 +43,7 @@ Application::Application(HINSTANCE instance, int showCommand)
         DebugLog::Info("Input reset.");
     });
 
-    window_.SetCursorVisible(true);
-    window_.LockCursorToClient();
-    DebugLog::Info("Cursor locked to window.");
+    ApplyCursorSettings();
 }
 
 int Application::Run()
@@ -54,7 +52,7 @@ int Application::Run()
     DebugLog::Info("Main loop started.");
 
 #if defined(_DEBUG)
-    double nextStatusTime = 1.0;
+    double nextStatusTime = config_.statusLogIntervalSeconds;
     unsigned int frameCount = 0;
 #endif
 
@@ -71,10 +69,15 @@ int Application::Run()
 
         timer_.Tick();
 
-        if (input_.WasKeyPressed(VK_ESCAPE))
+        if (input_.WasKeyPressed(config_.closeKey))
         {
-            DebugLog::Info("Escape pressed. Closing.");
+            DebugLog::Info("Close key pressed. Closing.");
             window_.RequestClose();
+        }
+
+        if (input_.WasKeyPressed(config_.cursorLockToggleKey))
+        {
+            ToggleCursorLock();
         }
 
         if (input_.WasLeftMouseButtonPressed())
@@ -84,7 +87,11 @@ int Application::Run()
         }
 
         const float pulse = static_cast<float>((std::sin(timer_.GetTotalTime()) + 1.0) * 0.5);
-        renderer_.BeginFrame(0.08f, 0.12f, 0.15f + pulse * 0.12f, 1.0f);
+        renderer_.BeginFrame(
+            config_.clearColorRed,
+            config_.clearColorGreen,
+            config_.clearColorBlue + pulse * config_.clearColorPulseAmount,
+            config_.clearColorAlpha);
         // Rendering work can be added here.
         renderer_.EndFrame();
 
@@ -98,7 +105,7 @@ int Application::Run()
                 timer_.GetDeltaTime() * 1000.0);
 
             frameCount = 0;
-            nextStatusTime += 1.0;
+            nextStatusTime += config_.statusLogIntervalSeconds;
         }
 #endif
 
@@ -111,16 +118,46 @@ int Application::Run()
 
 void Application::LimitFrameRate(std::chrono::steady_clock::time_point frameStartTime) const
 {
-    if (targetFrameRate_ == 0)
+    if (config_.targetFrameRate == 0)
     {
         return;
     }
 
-    const auto targetFrameTime = std::chrono::duration<double>(1.0 / targetFrameRate_);
+    const auto targetFrameTime = std::chrono::duration<double>(1.0 / config_.targetFrameRate);
     const auto elapsedTime = std::chrono::steady_clock::now() - frameStartTime;
 
     if (elapsedTime < targetFrameTime)
     {
         std::this_thread::sleep_for(targetFrameTime - elapsedTime);
+    }
+}
+
+void Application::ApplyCursorSettings()
+{
+    window_.SetCursorVisible(config_.showCursor);
+
+    if (config_.lockCursorOnStart)
+    {
+        window_.LockCursorToClient();
+        DebugLog::Info("Cursor locked to window.");
+    }
+    else
+    {
+        window_.UnlockCursor();
+        DebugLog::Info("Cursor unlocked.");
+    }
+}
+
+void Application::ToggleCursorLock()
+{
+    if (window_.IsCursorLocked())
+    {
+        window_.UnlockCursor();
+        DebugLog::Info("Cursor unlocked.");
+    }
+    else
+    {
+        window_.LockCursorToClient();
+        DebugLog::Info("Cursor locked to window.");
     }
 }

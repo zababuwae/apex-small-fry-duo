@@ -33,6 +33,7 @@ public:
     void SetCursorVisible(bool isVisible) const;
     void LockCursorToClient();
     void UnlockCursor();
+    bool IsCursorLocked() const;
     void SetResizeCallback(ResizeCallback callback);
     void SetKeyCallback(KeyCallback callback);
     void SetMouseMoveCallback(MouseMoveCallback callback);

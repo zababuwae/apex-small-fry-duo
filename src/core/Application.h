@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EngineConfig.h"
 #include "Timer.h"
 #include "../input/Input.h"
 #include "../platform/Window.h"
@@ -18,13 +19,12 @@ public:
 
 private:
     void LimitFrameRate(std::chrono::steady_clock::time_point frameStartTime) const;
+    void ApplyCursorSettings();
+    void ToggleCursorLock();
 
-    static constexpr bool DefaultVSyncEnabled = true;
-    static constexpr unsigned int DefaultTargetFrameRate = 60;
-
+    EngineConfig config_;
     Window window_;
     Renderer renderer_;
     Timer timer_;
     Input input_;
-    unsigned int targetFrameRate_ = DefaultTargetFrameRate;
 };

@@ -2,22 +2,19 @@ cmake_minimum_required(VERSION 3.25)
 
 project(ApexSmallFryDuo VERSION 0.1.0 LANGUAGES CXX)
 
-add_executable(ApexSmallFryDuo WIN32
-    src/main.cpp
-    src/core/Application.cpp
-    src/core/Application.h
-    src/core/DebugLog.cpp
-    src/core/DebugLog.h
-    src/core/EngineConfig.h
-    src/core/Timer.cpp
-    src/core/Timer.h
-    src/input/Input.cpp
-    src/input/Input.h
-    src/platform/Window.cpp
-    src/platform/Window.h
-    src/renderer/Renderer.cpp
-    src/renderer/Renderer.h
+#-collect sources with glob
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
 )
+add_executable(ApexSmallFryDuo WIN32 ${sources})
+
+#-match visual studio explorer with actual folder structure
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" PREFIX "src" FILES ${sources})
+
+#-set include root instead of using relative path
+target_include_directories(ApexSmallFryDuo PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+
 
 target_compile_features(ApexSmallFryDuo PRIVATE cxx_std_17)
 set_target_properties(ApexSmallFryDuo PROPERTIES

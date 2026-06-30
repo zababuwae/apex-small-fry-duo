@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "../core/DebugLog.h"
+#include "core/DebugLog.h"
 
 #include <stdexcept>
 

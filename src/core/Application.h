@@ -2,9 +2,9 @@
 
 #include "EngineConfig.h"
 #include "Timer.h"
-#include "../input/Input.h"
-#include "../platform/Window.h"
-#include "../renderer/Renderer.h"
+#include "input/Input.h"
+#include "platform/Window.h"
+#include "renderer/Renderer.h"
 
 #include <Windows.h>
 

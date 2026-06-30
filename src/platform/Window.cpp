@@ -1,5 +1,5 @@
 #include "Window.h"
-#include "../core/DebugLog.h"
+#include "core/DebugLog.h"
 
 #include <windowsx.h>
 

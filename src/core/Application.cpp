@@ -10,6 +10,9 @@ Application::Application(HINSTANCE instance, int showCommand)
 {
     renderer_.Initialize(window_.GetHandle(), window_.GetClientWidth(), window_.GetClientHeight());
     renderer_.SetVSyncEnabled(config_.vSyncEnabled);
+    // ----- compilie triangle shader
+    renderer_.CreateTriangleShaders(L"src/renderer/shaders/Triangle.hlsl");
+    // ------------------------------
     DebugLog::Format(
         "Frame pacing ready. VSync=%s TargetFPS=%u",
         renderer_.IsVSyncEnabled() ? "On" : "Off",
@@ -92,7 +95,9 @@ int Application::Run()
             config_.clearColorGreen,
             config_.clearColorBlue + pulse * config_.clearColorPulseAmount,
             config_.clearColorAlpha);
-        // Rendering work can be added here.
+        // ----- render
+        renderer_.DrawTriangle();
+        // ------------
         renderer_.EndFrame();
 
 #if defined(_DEBUG)

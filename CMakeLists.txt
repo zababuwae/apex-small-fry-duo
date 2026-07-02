@@ -45,6 +45,7 @@ endif()
 target_link_libraries(ApexSmallFryDuo PRIVATE
     d3d11
     dxgi
+    d3dcompiler
 )
 
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY

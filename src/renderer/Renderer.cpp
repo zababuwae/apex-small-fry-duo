@@ -1,6 +1,8 @@
 #include "Renderer.h"
 #include "core/DebugLog.h"
 
+#include <d3dcompiler.h>
+
 #include <stdexcept>
 
 namespace
@@ -11,6 +13,41 @@ void ThrowIfFailed(HRESULT result, const char* message)
     {
         throw std::runtime_error(message);
     }
+}
+
+Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(
+    const std::wstring& path,
+    const char* entryPoint,
+    const char* target)
+{
+    UINT compileFlags = 0;
+#if defined(_DEBUG)
+    compileFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+    Microsoft::WRL::ComPtr<ID3DBlob> byteCode;
+    Microsoft::WRL::ComPtr<ID3DBlob> errors;
+    const HRESULT result = D3DCompileFromFile(
+        path.c_str(),
+        nullptr,
+        D3D_COMPILE_STANDARD_FILE_INCLUDE,
+        entryPoint,
+        target,
+        compileFlags,
+        0,
+        byteCode.GetAddressOf(),
+        errors.GetAddressOf());
+
+    if (FAILED(result))
+    {
+        if (errors != nullptr)
+        {
+            DebugLog::Error(static_cast<const char*>(errors->GetBufferPointer()));
+        }
+        throw std::runtime_error("Failed to compile shader.");
+    }
+
+    return byteCode;
 }
 }
 
@@ -98,6 +135,32 @@ void Renderer::Initialize(HWND windowHandle, UINT width, UINT height)
     DebugLog::Format("DX11 ready. FeatureLevel=0x%04X", static_cast<unsigned int>(selectedFeatureLevel));
 }
 
+void Renderer::CreateTriangleShaders(const std::wstring& shaderPath)
+{
+    const Microsoft::WRL::ComPtr<ID3DBlob> vertexByteCode =
+        CompileShader(shaderPath, "VSMain", "vs_5_0");
+    const Microsoft::WRL::ComPtr<ID3DBlob> pixelByteCode =
+        CompileShader(shaderPath, "PSMain", "ps_5_0");
+
+    ThrowIfFailed(
+        device_->CreateVertexShader(
+            vertexByteCode->GetBufferPointer(),
+            vertexByteCode->GetBufferSize(),
+            nullptr,
+            vertexShader_.GetAddressOf()),
+        "Failed to create the vertex shader.");
+
+    ThrowIfFailed(
+        device_->CreatePixelShader(
+            pixelByteCode->GetBufferPointer(),
+            pixelByteCode->GetBufferSize(),
+            nullptr,
+            pixelShader_.GetAddressOf()),
+        "Failed to create the pixel shader.");
+
+    DebugLog::Info("Triangle shaders compiled.");
+}
+
 void Renderer::Resize(UINT width, UINT height)
 {
     if (swapChain_ == nullptr || width == 0 || height == 0)
@@ -120,6 +183,17 @@ void Renderer::Resize(UINT width, UINT height)
 void Renderer::BeginFrame(float red, float green, float blue, float alpha) const
 {
     Clear(red, green, blue, alpha);
+}
+
+void Renderer::DrawTriangle() const
+{
+    // No vertex buffer / input layout: the vertices are generated in the
+    // vertex shader from SV_VertexID, so we only bind shaders and issue Draw.
+    deviceContext_->IASetInputLayout(nullptr);
+    deviceContext_->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    deviceContext_->VSSetShader(vertexShader_.Get(), nullptr, 0);
+    deviceContext_->PSSetShader(pixelShader_.Get(), nullptr, 0);
+    deviceContext_->Draw(3, 0);
 }
 
 void Renderer::EndFrame() const

@@ -315,6 +315,7 @@ void Window::UpdateCursorClip() const
         return;
     }
 
-    RECT clipRectangle{topLeft.x, topLeft.y, bottomRight.x, bottomRight.y};
+    // reduce clip cursor range by 1 pixel
+    RECT clipRectangle{topLeft.x+1, topLeft.y+1, bottomRight.x-1, bottomRight.y-1};
     ClipCursor(&clipRectangle);
 }
